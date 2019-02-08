@@ -1,17 +1,17 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Begin VB.Form frmMain 
    Caption         =   "Project1"
    ClientHeight    =   5910
-   ClientLeft      =   165
-   ClientTop       =   855
+   ClientLeft      =   225
+   ClientTop       =   870
    ClientWidth     =   9240
    LinkTopic       =   "Form1"
    ScaleHeight     =   5910
    ScaleWidth      =   9240
-   StartUpPosition =   3  'Windows 기본값
+   StartUpPosition =   3  'Windows Default
    Begin VB.TextBox txtLport 
       Height          =   375
       Left            =   5160
@@ -25,7 +25,7 @@ Begin VB.Form frmMain
       Height          =   375
       Left            =   3840
       MaskColor       =   &H8000000A&
-      Style           =   1  '그래픽
+      Style           =   1  'Graphical
       TabIndex        =   8
       Top             =   720
       Width           =   1215
@@ -34,6 +34,7 @@ Begin VB.Form frmMain
       Caption         =   "SEND"
       Height          =   375
       Left            =   6120
+      Style           =   1  'Graphical
       TabIndex        =   7
       Top             =   720
       Width           =   1335
@@ -80,7 +81,7 @@ Begin VB.Form frmMain
       Height          =   3495
       Left            =   360
       MultiLine       =   -1  'True
-      ScrollBars      =   3  '양방향
+      ScrollBars      =   3  'Both
       TabIndex        =   3
       Top             =   1920
       Width           =   8655
@@ -94,7 +95,7 @@ Begin VB.Form frmMain
       Width           =   7455
    End
    Begin MSComctlLib.Toolbar tbToolBar 
-      Align           =   1  '위 맞춤
+      Align           =   1  'Align Top
       Height          =   420
       Left            =   0
       TabIndex        =   1
@@ -192,7 +193,7 @@ Begin VB.Form frmMain
       EndProperty
    End
    Begin MSComctlLib.StatusBar sbStatusBar 
-      Align           =   2  '아래 맞춤
+      Align           =   2  'Align Bottom
       Height          =   270
       Left            =   0
       TabIndex        =   0
@@ -212,12 +213,12 @@ Begin VB.Form frmMain
          BeginProperty Panel2 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   6
             AutoSize        =   2
-            TextSave        =   "2009-08-06"
+            TextSave        =   "2019-02-08"
          EndProperty
          BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   5
             AutoSize        =   2
-            TextSave        =   "오후 4:33"
+            TextSave        =   "오후 12:01"
          EndProperty
       EndProperty
    End
@@ -403,6 +404,8 @@ Option Explicit
 
 ''
 
+Private Declare Function inet_addr Lib "wsock32.dll" (ByVal cp As String) As Long
+Private Declare Function ntohl Lib "wsock32.dll" (ByVal netlong As Long) As Long
 
 Dim f1
     
@@ -411,7 +414,17 @@ Dim VarString As String
 
 Private Sub cmdSend_Click()
 
-
+    Dim wstate
+    
+    wstate = Winsock1.state
+    
+    If wstate <> sckOpen Then
+        cmdSend.BackColor = vbRed
+        Exit Sub
+    End If
+    
+    SaveSetting App.Title, "Settings", "txtTime", txtTime
+    
     Timer1.Interval = txtTime.Text
 
     If Timer1.Enabled = True Then
@@ -419,26 +432,36 @@ Private Sub cmdSend_Click()
         cmdSend.BackColor = &H8000000F
     Else
         Timer1.Enabled = True
-        cmdSend.BackColor = vbBlue
+        cmdSend.BackColor = vbGreen
     End If
-
 
 End Sub
 
 Private Sub cmdUDPopen_Click()
-
-
+    
+    Dim wstate
+    
+    wstate = Winsock1.state
+    
+    If wstate <> sckClosed Then
+        With Winsock1
+            .Close
+        End With
+        cmdUDPopen.BackColor = &H8000000F
+    Else
+        SaveSetting App.Title, "Settings", "txtRip", txtRip
+        SaveSetting App.Title, "Settings", "txtRport", txtRport
+        SaveSetting App.Title, "Settings", "txtLport", txtLport
+        
         With Winsock1
             .RemoteHost = Trim$(txtRip)
             .RemotePort = Trim$(txtRport)
             .LocalPort = Trim$(txtLport)
-
+            
             .Bind .LocalPort
-            
-            cmdUDPopen.BackColor = vbBlue
-            
         End With
-
+        cmdUDPopen.BackColor = vbGreen
+    End If
 End Sub
 
 Private Sub Form_Load()
@@ -447,12 +470,64 @@ Private Sub Form_Load()
 ''    Me.Top = GetSetting(App.Title, "Settings", "MainTop", 1000)
 ''    Me.Width = GetSetting(App.Title, "Settings", "MainWidth", 6500)
 ''    Me.Height = GetSetting(App.Title, "Settings", "MainHeight", 6500)
-    
-    
-    Text1.Text = ""
-    
+   
+    Dim txtRipTmp$, txtRportTmp$, txtLportTmp$, txtFileTmp$, txtTimeTmp$
 
-
+    txtRipTmp = _
+        GetSetting(App.Title, "Settings", "txtRip", "Fail")
+    txtRportTmp = _
+        GetSetting(App.Title, "Settings", "txtRport", "Fail")
+    txtLportTmp = _
+        GetSetting(App.Title, "Settings", "txtLport", "Fail")
+    txtFileTmp = _
+        GetSetting(App.Title, "Settings", "txtFile", "Fail")
+    txtTimeTmp = _
+        GetSetting(App.Title, "Settings", "txtTime", "Fail")
+    
+    If StrComp(txtRipTmp, "Fail", 1) = 0 _
+        Or inet_addr(txtRipTmp) = &HFFFFFFFF _
+        Then
+        txtRipTmp = "192.168.0.223"
+        SaveSetting App.Title, "Settings", "txtRip", txtRipTmp
+    End If
+    If IsNumeric(txtRportTmp) = False _
+        Or CLng(Val(txtRportTmp)) > 65535 _
+        Or CLng(Val(txtRportTmp)) < 0 _
+        Then
+        txtRportTmp = "4002"
+        SaveSetting App.Title, "Settings", "txtRport", txtRportTmp
+    End If
+    If IsNumeric(txtLportTmp) = False _
+        Or CLng(Val(txtLportTmp)) > 65535 _
+        Or CLng(Val(txtLportTmp)) < 0 _
+        Then
+        txtLportTmp = "4321"
+        SaveSetting App.Title, "Settings", "txtLport", txtLportTmp
+    End If
+    If StrComp(txtFileTmp, "Fail", 1) = 0 _
+        Then
+        txtFileTmp = ""
+        SaveSetting App.Title, "Settings", "txtFile", txtFileTmp
+    End If
+    If IsNumeric(txtTimeTmp) = False _
+        Or CLng(Val(txtTimeTmp)) > 1000 _
+        Or CLng(Val(txtTimeTmp)) < 0 _
+        Then
+        txtTimeTmp = "200"
+        SaveSetting App.Title, "Settings", "txtTime", txtTimeTmp
+    End If
+    
+    txtRip = txtRipTmp
+    txtRport = txtRportTmp
+    txtLport = txtLportTmp
+    Text1.Text = txtFileTmp
+    If FileExists(Text1.Text) Then
+         
+        f1 = FreeFile
+        Open Text1.Text For Input As #f1
+    
+    End If
+    txtTime = txtTimeTmp
     
 End Sub
 
@@ -618,11 +693,15 @@ Private Sub mnuFileOpen_Click()
     
         Text1.Text = .Filename
         ''''''''''''''''''''''
+        SaveSetting App.Title, "Settings", "txtFile", Text1.Text
     
     
         If FileExists(.Filename) Then
              
-             f1 = FreeFile
+            If f1 <> 0 Then
+                Close f1
+            End If
+            f1 = FreeFile
             Open .Filename For Input As #f1
         
         End If
@@ -650,7 +729,7 @@ Private Sub Timer1_Timer()
 
         If Not EOF(f1) Then
             
-            Line Input #1, VarString
+            Line Input #f1, VarString
             ''Debug.Print VarString
 
             If Len(VarString) > 0 Then
@@ -667,7 +746,11 @@ Private Sub Timer1_Timer()
                 DoEvents
                 
             End If
-            
+        Else
+            Timer1.Enabled = False
+            cmdSend.BackColor = &H8000000F
+            Close f1
+            Open Text1.Text For Input As #f1
         End If
 
 
