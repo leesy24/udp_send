@@ -1,9 +1,9 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Begin VB.Form frmMain 
-   Caption         =   "Project1"
+   Caption         =   "UDP send"
    ClientHeight    =   5910
    ClientLeft      =   225
    ClientTop       =   870
@@ -218,7 +218,7 @@ Begin VB.Form frmMain
          BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   5
             AutoSize        =   2
-            TextSave        =   "오후 12:01"
+            TextSave        =   "오후 3:06"
          EndProperty
       EndProperty
    End
@@ -416,7 +416,7 @@ Private Sub cmdSend_Click()
 
     Dim wstate
     
-    wstate = Winsock1.state
+    wstate = Winsock1.State
     
     If wstate <> sckOpen Then
         cmdSend.BackColor = vbRed
@@ -441,7 +441,7 @@ Private Sub cmdUDPopen_Click()
     
     Dim wstate
     
-    wstate = Winsock1.state
+    wstate = Winsock1.State
     
     If wstate <> sckClosed Then
         With Winsock1
