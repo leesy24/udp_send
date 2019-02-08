@@ -218,7 +218,7 @@ Begin VB.Form frmMain
          BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   5
             AutoSize        =   2
-            TextSave        =   "오후 3:06"
+            TextSave        =   "오후 3:31"
          EndProperty
       EndProperty
    End
@@ -465,6 +465,8 @@ Private Sub cmdUDPopen_Click()
 End Sub
 
 Private Sub Form_Load()
+    
+    Me.Caption = Me.Caption & " v" & App.Major & "." & App.Minor
     
 ''    Me.Left = GetSetting(App.Title, "Settings", "MainLeft", 1000)
 ''    Me.Top = GetSetting(App.Title, "Settings", "MainTop", 1000)
