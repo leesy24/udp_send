@@ -213,12 +213,12 @@ Begin VB.Form frmMain
          BeginProperty Panel2 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   6
             AutoSize        =   2
-            TextSave        =   "2019-02-08"
+            TextSave        =   "2019-02-21"
          EndProperty
          BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   5
             AutoSize        =   2
-            TextSave        =   "오후 3:31"
+            TextSave        =   "오후 5:30"
          EndProperty
       EndProperty
    End
@@ -444,6 +444,9 @@ Private Sub cmdUDPopen_Click()
     wstate = Winsock1.State
     
     If wstate <> sckClosed Then
+        Text2.Text = ""
+        Close f1
+        Open Text1.Text For Input As #f1
         With Winsock1
             .Close
         End With
@@ -749,6 +752,7 @@ Private Sub Timer1_Timer()
                 
             End If
         Else
+            Text2.Text = ""
             Timer1.Enabled = False
             cmdSend.BackColor = &H8000000F
             Close f1
